@@ -19,9 +19,10 @@ import java.util.Map;
 
 public class MultiAdapter<Base> extends RecyclerView.Adapter<MultiViewHolder> {
     private int mViewTypes = 0;
-    private ArrayMap<Class, Integer> mClassMap = null;
+    private ArrayMap<Class, ViewTypeListener> mClassMap = null;
     private SparseArray<Class<? extends MultiViewHolder>> mHolders;
     private SparseIntArray mLayouts;
+    private OnItemClickListener<Base> mInternalClickListener;
     protected List<Base> mItems;
     public MultiAdapter(){
         mItems = new ArrayList<Base>();
@@ -29,14 +30,16 @@ public class MultiAdapter<Base> extends RecyclerView.Adapter<MultiViewHolder> {
         mHolders = new SparseArray<>();
         mLayouts = new SparseIntArray();
         mClassMap = new ArrayMap<>();
-    }
 
-    public MultiAdapter(List<Base> list){
-        mItems = list;
-
-        mHolders = new SparseArray<>();
-        mLayouts = new SparseIntArray();
-        mClassMap = new ArrayMap<>();
+        mInternalClickListener = new OnItemClickListener<Base>() {
+            @Override
+            public void onItemClick(Base item, int position) {
+                OnItemClickListener externalListener = mClassMap.get(item.getClass()).onClickListener;
+                if(externalListener!= null) {
+                    externalListener.onItemClick(item, position);
+                }
+            }
+        };
     }
 
     @Override
@@ -48,6 +51,12 @@ public class MultiAdapter<Base> extends RecyclerView.Adapter<MultiViewHolder> {
         MultiViewHolder vh = null;
         try {
             vh = (MultiViewHolder) vhClass.getConstructor(new Class[]{View.class}).newInstance(v);
+            vh.setOnItemClickListener(new MultiViewHolder.OnViewHolderClickListener() {
+                @Override
+                public void onClick(int position) {
+                    mInternalClickListener.onItemClick(getItem(position), position);
+                }
+            });
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -68,22 +77,14 @@ public class MultiAdapter<Base> extends RecyclerView.Adapter<MultiViewHolder> {
         return mItems==null?0:mItems.size();
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        Class cls = mItems.get(position).getClass();
-        return mClassMap.get(cls);
-    }
-
     public Base getItem(int position) {
         return mItems.get(position);
     }
 
-    public List<Base> getItems() {
-        return mItems;
-    }
-
-    public void add(Base item) {
-        mItems.add(item);
+    @Override
+    public int getItemViewType(int position) {
+        Class cls = mItems.get(position).getClass();
+        return mClassMap.get(cls).viewType;
     }
 
     public void addAll(List<Base> items) {
@@ -91,27 +92,24 @@ public class MultiAdapter<Base> extends RecyclerView.Adapter<MultiViewHolder> {
         mItems = items;
     }
 
-    public void addAllAndNotify(List<Base> items) {
-        addAll(items);
-        notifyDataSetChanged();
-    }
-
-    public void cleanAll() {
-        mItems.clear();
-    }
-
-    public void cleanAllAndNotify(){
-        cleanAll();
-        notifyDataSetChanged();
-    }
-
     public <T> void add(Class<T> cls,
                         Class<? extends MultiViewHolder<T>> vh,
-                        @LayoutRes int layoutRes){
-        mClassMap.put(cls, mViewTypes);
+                        @LayoutRes int layoutRes,
+                        OnItemClickListener<T> onClickListener){
+        ViewTypeListener t = new ViewTypeListener(mViewTypes, onClickListener);
+        mClassMap.put(cls, t);
         mLayouts.put(mViewTypes, layoutRes);
         mHolders.append(mViewTypes, vh);
 
         mViewTypes++;
+    }
+
+    private static class ViewTypeListener {
+        int viewType;
+        OnItemClickListener onClickListener;
+        ViewTypeListener(int viewType, OnItemClickListener l) {
+            this.viewType = viewType;
+            this.onClickListener = l;
+        }
     }
 }

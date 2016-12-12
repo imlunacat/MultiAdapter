@@ -1,14 +1,18 @@
 package me.lunacat.multiadapteractivity;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import me.lunacat.multiadapter.MultiAdapter;
+import me.lunacat.multiadapter.OnItemClickListener;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,8 +29,25 @@ public class MainActivity extends AppCompatActivity {
         MultiAdapter<ITableCell> adapter = new MultiAdapter<>();
         adapter.addAll(items);
 
-        adapter.add(TextCell.class, TextCellViewHolder.class, R.layout.item_text);
-        adapter.add(ImageCell.class, ImageCellViewHolder.class, R.layout.item_image);
+        adapter.add(TextCell.class,
+                TextCellViewHolder.class,
+                R.layout.item_text,
+                new OnItemClickListener<TextCell>() {
+                    @Override
+                    public void onItemClick(TextCell item, int position) {
+                        Toast.makeText(MainActivity.this, item.getText(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+        adapter.add(ImageCell.class,
+                ImageCellViewHolder.class,
+                R.layout.item_image,
+                new OnItemClickListener<ImageCell>() {
+                    @Override
+                    public void onItemClick(ImageCell item, int position) {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(item.getPageUrl()));
+                        startActivity(browserIntent);
+                    }
+                });
         rv.setAdapter(adapter);
     }
 
