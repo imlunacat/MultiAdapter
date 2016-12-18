@@ -11,8 +11,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.lunacat.multiadapter.MultiAdapter;
-import me.lunacat.multiadapter.OnItemClickListener;
+import me.lunacat.multiadapter.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
 
         List<ITableCell> items = getCell();
         MultiAdapter<ITableCell> adapter = new MultiAdapter<>();
+        items.add(new RandomCell());
+        adapter.enableDefaultViewHolder(BuildConfig.DEBUG);
         adapter.addAll(items);
 
         adapter.add(TextCell.class,
