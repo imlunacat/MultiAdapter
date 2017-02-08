@@ -21,3 +21,21 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+ext {
+    compileSdkVersion   = 25
+    buildToolsVersion   = '25.0.1'
+    minSdkVersion       = 15
+    targetSdkVersion    = 25
+    lintVersion         = '25.2.0'
+    version             = '1.0.0'
+}
+
+ext.deps = [
+        // testing
+        junit      : 'junit:junit:4.12',
+
+        // lint
+        lintapi    : "com.android.tools.lint:lint-api:${lintVersion}",
+        lintchecks : "com.android.tools.lint:lint-checks:${lintVersion}"
+]

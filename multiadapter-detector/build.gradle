@@ -1,0 +1,24 @@
+apply plugin: 'java'
+
+targetCompatibility = JavaVersion.VERSION_1_7
+sourceCompatibility = JavaVersion.VERSION_1_7
+
+configurations {
+    lintChecks
+}
+
+dependencies {
+    compile deps.lintapi
+    compile deps.lintchecks
+
+    lintChecks files(jar)
+}
+
+jar {
+    baseName 'me.lunacat.multiadapter.lint'
+
+    manifest {
+        attributes 'Manifest-Version': rootProject.ext.version
+        attributes('Lint-Registry': 'me.lunacat.multiadapter.lint.MultiAdapterIssueRegistry')
+    }
+}
