@@ -49,6 +49,13 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(browserIntent);
                     }
                 });
+
+        MultiViewHolder<String> cl = new MultiViewHolder<String>(null) {
+            @Override
+            public void onBindViewHolder(String element, int position) {
+
+            }
+        };
         rv.setAdapter(adapter);
     }
 
